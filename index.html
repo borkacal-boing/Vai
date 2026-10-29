@@ -72,13 +72,23 @@
   td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
   th { color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
   footer { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+  .method { display: grid; gap: 10px; font-size: 0.9rem; line-height: 1.55; }
+  .method h3 { font-size: 0.95rem; margin: 8px 0 0; }
+  .method p { margin: 0; max-width: 65ch; }
+  .eq { font-family: var(--mono); font-size: 0.85rem; background: var(--bg); border-radius: 8px; padding: 8px 10px; overflow-x: auto; white-space: nowrap; }
+  .method sup a, .refs a { color: var(--accent); }
+  .method sup { line-height: 0; }
+  details { border-top: 1px solid var(--line); padding-top: 8px; }
+  summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 0.85rem; }
+  .refs { margin: 0; padding-left: 1.6em; font-size: 0.8rem; line-height: 1.5; display: grid; gap: 6px; }
+  .refs a { word-break: break-all; }
 </style>
 </head>
 <body>
 <main>
   <header>
     <h1>Korekční faktor CF(A)</h1>
-    <div class="formula">log CF = Σ eᵢ · %Xᵢ &nbsp;(Mg, Cu, Si dle rovnice A.1)</div>
+    <div class="formula">log CF = Σ kⱼ · %j &nbsp;(Mg, Cu, Si dle rovnice A.1)</div>
   </header>
 
   <section>
@@ -102,14 +112,112 @@
   </section>
 
   <section>
-    <h2>Použité koeficienty eᵢ (log₁₀ CF na 1 hm. %)</h2>
+    <h2>Použité koeficienty kⱼ (log₁₀ CF na 1 hm. %)</h2>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Prvek</th><th>eᵢ</th><th>Původ</th></tr></thead>
+        <thead><tr><th>Prvek</th><th>kⱼ</th><th>Původ</th></tr></thead>
         <tbody id="coef"></tbody>
       </table>
     </div>
-    <p class="note">Mn, Fe a Zn jsou nafitované z tabulky A‑1 téhož manuálu (31 slitin, jmenovitá složení). Fit vrací Mg, Cu a Si v souladu s rovnicí A.1, což ověřuje postup. Ti je v Al jen v setinách procenta a jeho vliv je pod rozlišením tabulky, proto 0.</p>
+    <p class="note">Postup odvození je popsán v sekci Metodika níže.</p>
+  </section>
+
+  <section class="method" id="metodika">
+    <h2>Metodika a odvození konstant</h2>
+
+    <h3>1. Princip měření</h3>
+    <p>ALSCAN neměří obsah vodíku přímo. Měří parciální tlak H₂ v uzavřené smyčce plynu, která je v rovnováze s taveninou<sup><a href="#ref1">[1]</a></sup>. Rozpouštění vodíku v kovu je disociativní:</p>
+    <div class="eq">H₂(g) ⇌ 2 [H] &nbsp;&nbsp; K(T) = a<sub>H</sub>² / p<sub>H₂</sub></div>
+    <p>Aktivita rozpuštěného vodíku je a<sub>H</sub> = f<sub>H</sub>·[%H], kde f<sub>H</sub> je aktivitní koeficient (Henryho standardní stav, 1 hm. %). Odtud plyne Sievertsův zákon<sup><a href="#ref2">[2]</a></sup>:</p>
+    <div class="eq">[%H] = √K(T) · √p<sub>H₂</sub> / f<sub>H</sub></div>
+
+    <h3>2. Definice korekčního faktoru</h3>
+    <p>V čistém hliníku je f<sub>H</sub> = 1 a rozpustnost S₀(T) = √K(T)·√p. Ve slitině je S = S₀/f<sub>H</sub>. Korekční faktor je poměr rozpustností při 700 °C<sup><a href="#ref1">[1]</a></sup>:</p>
+    <div class="eq">CF = S / S₀ = 1 / f<sub>H</sub></div>
+    <p>Přístroj tedy vypisuje [H] = S₀(T) · CF · √p<sub>H₂</sub>. CF vyjadřuje jen to, jak legury mění aktivitní koeficient vodíku.</p>
+
+    <h3>3. Wagnerův interakční formalismus</h3>
+    <p>Pro zředěné roztoky se log f<sub>H</sub> rozvine do prvního řádu v obsazích legujících prvků<sup><a href="#ref3">[3]</a></sup>:</p>
+    <div class="eq">log f<sub>H</sub> = Σ e<sub>H</sub><sup>j</sup> · [%j]</div>
+    <p>Dosazením do CF = 1/f<sub>H</sub> a označením k<sub>j</sub> = −e<sub>H</sub><sup>j</sup> dostaneme obecný tvar, ze kterého aplikace počítá:</p>
+    <div class="eq">CF = 10^( Σ k<sub>j</sub> · [%j] )</div>
+    <p>Předpoklady: zanedbané členy druhého řádu (interakce legura–legura), aditivita vlivů jednotlivých prvků a slabá teplotní závislost k<sub>j</sub> v okolí 700 °C. Stejný přístup používají Sigworth a Engh<sup><a href="#ref6">[6]</a></sup> i Anyalebechi<sup><a href="#ref8">[8]</a></sup>.</p>
+
+    <h3>4. Mg, Cu, Si – rovnice A.1</h3>
+    <p>Koeficienty k<sub>Mg</sub> = +0,0170, k<sub>Cu</sub> = −0,0269 a k<sub>Si</sub> = −0,0119 jsou převzaté beze změny z rovnice A.1 manuálu ALSCAN<sup><a href="#ref1">[1]</a></sup>. Ta vychází z empirické práce Doutreho<sup><a href="#ref4">[4]</a></sup>. Manuál uvádí, že mimo Al‑Li slitiny ovlivňují rozpustnost H významně jen tyto tři prvky. S tím souhlasí i literární přehledy: Mg rozpustnost zvyšuje, Cu a Si ji snižují<sup><a href="#ref6">[6]</a></sup><sup><a href="#ref8">[8]</a></sup><sup><a href="#ref9">[9]</a></sup>.</p>
+
+    <h3>5. Mn, Fe, Zn – fit tabulky A‑1</h3>
+    <p><b>Data.</b> Tabulka A‑1 manuálu<sup><a href="#ref1">[1]</a></sup> uvádí CF pro 31 tvářených slitin. Ke každé jsem přiřadil jmenovité složení, tj. střed nebo typickou hodnotu rozsahu podle registrace Aluminum Association<sup><a href="#ref5">[5]</a></sup>. Použitá složení jsou v tabulce níže.</p>
+    <p><b>Model.</b> Pro každou slitinu i se spočte reziduum po odečtení rovnice A.1:</p>
+    <div class="eq">r<sub>i</sub> = log CF<sub>tab,i</sub> − (0,0170·Mg − 0,0269·Cu − 0,0119·Si)</div>
+    <p>Rezidua se fitují lineárním modelem bez absolutního členu:</p>
+    <div class="eq">r<sub>i</sub> = k<sub>Mn</sub>·Mn<sub>i</sub> + k<sub>Fe</sub>·Fe<sub>i</sub> + k<sub>Zn</sub>·Zn<sub>i</sub></div>
+    <p><b>Váhy.</b> Hodnoty v tabulce jsou zaokrouhlené na 0,01, tedy nejistota ±0,005. V logaritmu to dává σ<sub>i</sub> = 0,005 / (CF<sub>i</sub>·ln 10) ≈ 0,002. Slitiny řady 1xxx jsou v tabulce jen na jedno desetinné místo, proto mají σ ≈ 0,02. Fit je vážená metoda nejmenších čtverců. Nejistoty koeficientů pocházejí z kovarianční matice, škálované redukovaným χ², když je větší než 1.</p>
+    <p><b>Výsledek:</b> k<sub>Mn</sub> = −0,0027 ± 0,0017, k<sub>Fe</sub> = −0,0018 ± 0,0015, k<sub>Zn</sub> = −0,0002 ± 0,0003. Redukované χ² je asi 2,4. Cr (5xxx, 7075), Zr (2219, 7xxx) a Ni (2618) ve fitu nejsou a jejich případný vliv se promítá do rezidua.</p>
+    <p><b>Validace.</b> Když se ve fitu ponechají volné i Mg, Cu a Si, vyjde k<sub>Mg</sub> = 0,0160 ± 0,0002, k<sub>Cu</sub> = −0,0263 ± 0,0003 a k<sub>Si</sub> = −0,0126 ± 0,0003. To odpovídá rovnici A.1 do 6 % a redukované χ² klesne na 1,2. Postup tedy reprodukuje známé konstanty a lze mu věřit i u ostatních prvků.</p>
+    <p><b>Interpretace.</b> Zn je určený dobře díky slitinám 7xxx s 5–6 % Zn a jeho vliv je prokazatelně zanedbatelný. Mn a Fe vycházejí jen 1,6σ a 1,2σ od nuly, proto je třeba je brát jako horní odhad, ne jako průkazný efekt. Záporné znaménko u Fe souhlasí s měřením, podle kterého obsah H v tavenině s rostoucím Fe klesá<sup><a href="#ref10">[10]</a></sup>.</p>
+
+    <h3>6. Ti – horní mez</h3>
+    <p>Titan je v tvářených slitinách jen jako zjemňovač zrna, typicky kolem 0,02 % (nejvýše asi 0,15 %), a jeho obsah se mezi slitinami v tabulce téměř nemění. Fit ho proto neurčí (+0,10 ± 0,14). Jako hydridotvorný prvek by měl rozpustnost H mírně zvyšovat<sup><a href="#ref9">[9]</a></sup>. Odhad horní meze: i při |k<sub>Ti</sub>| = 0,1, což je šestkrát víc než u Mg, změní 0,02 % Ti hodnotu log CF o 0,002, tedy CF o méně než 0,5 %. Proto k<sub>Ti</sub> = 0.</p>
+
+    <h3>7. Omezení</h3>
+    <p>Rozšíření o Mn, Fe, Zn a Ti mění CF běžných slitin o méně než 1 %, což je pod zaokrouhlením tabulky manuálu i pod přesností měření. Tabulka A‑1 mohla být částečně spočtena přímo z rovnice A.1. V tom případě nafitované k<sub>Mn</sub> a k<sub>Fe</sub> odrážejí spíš zaokrouhlení a nepřesnost jmenovitých složení než fyziku. Model je lineární v hm. %, takže pro vysoce legované nebo Al‑Li slitiny neplatí (pro Al‑Li viz tabulka A‑3<sup><a href="#ref1">[1]</a></sup>). Do přístroje se proto zadává CF podle A.1.</p>
+
+    <details>
+      <summary>Data fitu – 31 slitin z tabulky A‑1</summary>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Slitina</th><th>Jmenovité složení (hm. %)</th><th>CF tab.</th><th>CF A.1</th></tr></thead>
+          <tbody>
+<tr><td>1050</td><td>Si 0,12, Fe 0,25, Cu 0,02</td><td class="n">1,0</td><td class="n">0,995</td></tr>
+<tr><td>1100</td><td>Si 0,1, Fe 0,4, Cu 0,12</td><td class="n">1,0</td><td class="n">0,990</td></tr>
+<tr><td>1200</td><td>Si 0,1, Fe 0,4, Cu 0,02</td><td class="n">1,0</td><td class="n">0,996</td></tr>
+<tr><td>1350</td><td>Si 0,05, Fe 0,2</td><td class="n">1,0</td><td class="n">0,999</td></tr>
+<tr><td>2011</td><td>Cu 5,5, Si 0,2, Fe 0,4</td><td class="n">0,72</td><td class="n">0,707</td></tr>
+<tr><td>2014</td><td>Cu 4,4, Si 0,8, Mn 0,8, Mg 0,5, Fe 0,3</td><td class="n">0,76</td><td class="n">0,760</td></tr>
+<tr><td>2017</td><td>Cu 4, Si 0,5, Mn 0,7, Mg 0,6, Fe 0,3</td><td class="n">0,79</td><td class="n">0,788</td></tr>
+<tr><td>2024</td><td>Cu 4,4, Mn 0,6, Mg 1,5, Si 0,15, Fe 0,2</td><td class="n">0,80</td><td class="n">0,804</td></tr>
+<tr><td>2219</td><td>Cu 6,3, Mn 0,3, Ti 0,06, Zr 0,18, Si 0,1, Fe 0,15</td><td class="n">0,67</td><td class="n">0,675</td></tr>
+<tr><td>2618</td><td>Cu 2,3, Mg 1,6, Fe 1,1, Ni 1, Si 0,18, Ti 0,07</td><td class="n">0,92</td><td class="n">0,919</td></tr>
+<tr><td>3003</td><td>Mn 1,2, Cu 0,12, Si 0,25, Fe 0,5</td><td class="n">0,98</td><td class="n">0,986</td></tr>
+<tr><td>3004</td><td>Mn 1,2, Mg 1, Si 0,15, Fe 0,4, Cu 0,15</td><td class="n">1,02</td><td class="n">1,026</td></tr>
+<tr><td>3105</td><td>Mn 0,5, Mg 0,5, Si 0,3, Fe 0,4, Cu 0,15</td><td class="n">0,99</td><td class="n">1,002</td></tr>
+<tr><td>4043</td><td>Si 5,25, Fe 0,4, Cu 0,1</td><td class="n">0,85</td><td class="n">0,861</td></tr>
+<tr><td>4343</td><td>Si 7,5, Fe 0,4, Cu 0,1</td><td class="n">0,80</td><td class="n">0,809</td></tr>
+<tr><td>4543</td><td>Si 6, Mg 0,25, Fe 0,3</td><td class="n">0,85</td><td class="n">0,857</td></tr>
+<tr><td>5050</td><td>Mg 1,4, Si 0,2, Fe 0,4, Cu 0,1</td><td class="n">1,03</td><td class="n">1,044</td></tr>
+<tr><td>5052</td><td>Mg 2,5, Cr 0,25, Si 0,15, Fe 0,25</td><td class="n">1,09</td><td class="n">1,098</td></tr>
+<tr><td>5056</td><td>Mg 5, Mn 0,12, Cr 0,12, Si 0,1, Fe 0,2</td><td class="n">1,20</td><td class="n">1,213</td></tr>
+<tr><td>5182</td><td>Mg 4,5, Mn 0,35, Si 0,1, Fe 0,2</td><td class="n">1,18</td><td class="n">1,189</td></tr>
+<tr><td>5083</td><td>Mg 4,45, Mn 0,7, Cr 0,15, Si 0,15, Fe 0,25</td><td class="n">1,17</td><td class="n">1,185</td></tr>
+<tr><td>5154</td><td>Mg 3,5, Cr 0,25, Si 0,12, Fe 0,2</td><td class="n">1,13</td><td class="n">1,143</td></tr>
+<tr><td>5457</td><td>Mg 1, Mn 0,3, Si 0,05, Fe 0,05</td><td class="n">1,02</td><td class="n">1,038</td></tr>
+<tr><td>6082</td><td>Si 1, Mg 0,9, Mn 0,7, Fe 0,3, Cu 0,05</td><td class="n">1,00</td><td class="n">1,005</td></tr>
+<tr><td>6101</td><td>Si 0,5, Mg 0,6, Fe 0,2</td><td class="n">1,00</td><td class="n">1,010</td></tr>
+<tr><td>6201</td><td>Si 0,7, Mg 0,8, Fe 0,25</td><td class="n">1,00</td><td class="n">1,012</td></tr>
+<tr><td>7010</td><td>Zn 6,2, Mg 2,35, Cu 1,75, Zr 0,12, Si 0,06, Fe 0,08</td><td class="n">0,98</td><td class="n">0,982</td></tr>
+<tr><td>7075</td><td>Zn 5,6, Mg 2,5, Cu 1,6, Cr 0,23, Si 0,2, Fe 0,25</td><td class="n">0,99</td><td class="n">0,993</td></tr>
+<tr><td>7150</td><td>Zn 6,4, Mg 2,35, Cu 2,2, Zr 0,11, Si 0,06, Fe 0,08</td><td class="n">0,95</td><td class="n">0,955</td></tr>
+<tr><td>8006</td><td>Fe 1,6, Mn 0,5, Si 0,2, Cu 0,15</td><td class="n">0,98</td><td class="n">0,985</td></tr>
+<tr><td>8007</td><td>Fe 1,6, Mn 0,6, Zn 1, Si 0,2</td><td class="n">0,99</td><td class="n">0,995</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <h3>Literatura</h3>
+    <ol class="refs">
+      <li id="ref1">ALSCAN Hydrogen Analyzer – uživatelský manuál, Appendix A: Alloy correction factors, formulas and tables (rovnice A.1, tabulky A‑1 až A‑3).</li>
+      <li id="ref2">Sieverts A.: Die Aufnahme von Gasen durch Metalle. <i>Z. Metallkd.</i> 21 (1929) 37–46.</li>
+      <li id="ref3">Wagner C.: <i>Thermodynamics of Alloys.</i> Addison‑Wesley, Reading (MA), 1952.</li>
+      <li id="ref4">Doutre D.: Alcan International Ltd., Kingston Laboratories – interní zpráva (citováno v [1] jako zdroj rovnice A.1).</li>
+      <li id="ref5">The Aluminum Association: <i>International Alloy Designations and Chemical Composition Limits for Wrought Aluminum and Wrought Aluminum Alloys</i> („Teal Sheets“).</li>
+      <li id="ref6">Sigworth G. K., Engh T. A.: Chemical and kinetic factors related to hydrogen removal from aluminum. <i>Metall. Trans. B</i> 13 (1982) 447–460.</li>
+      <li id="ref7">Talbot D. E. J., Anyalebechi P. N.: Solubility of hydrogen in liquid aluminium. <i>Mater. Sci. Technol.</i> 4 (1988) 1–4.</li>
+      <li id="ref8">Anyalebechi P. N.: Analysis of the effects of alloying elements on hydrogen solubility in liquid aluminum alloys. <i>Scripta Metall. Mater.</i> 33 (1995) 1209–1216. <a href="https://doi.org/10.1016/0956-716X(95)00373-4">doi:10.1016/0956-716X(95)00373-4</a></li>
+      <li id="ref9">Harvey J.-P., Chartrand P.: Modeling the hydrogen solubility in liquid aluminum alloys. <i>Metall. Mater. Trans. B</i> 41 (2010) 908–924. <a href="https://doi.org/10.1007/s11663-010-9381-5">doi:10.1007/s11663-010-9381-5</a></li>
+      <li id="ref10">Hu L., Bian X., Mahto A., Duan Y.: Influence of elemental iron on hydrogen content in superheated aluminum‑iron melts. <i>J. Wuhan Univ. Technol.–Mater. Sci. Ed.</i> 19(2) (2004) 57–61. <a href="https://doi.org/10.1007/BF03000170">doi:10.1007/BF03000170</a></li>
+    </ol>
   </section>
 
   <footer>
@@ -126,15 +234,15 @@ const LABEL = { cu: 'Cu', mg: 'Mg', mn: 'Mn', si: 'Si', fe: 'Fe', ti: 'Ti', zn: 
 // rovnice A.1 (ALSCAN, Doutre)
 const A1 = { mg: 0.0170, cu: -0.0269, si: -0.0119 };
 // rozšíření: fit tabulky A-1 při zafixovaných Mg, Cu, Si
-const EXT = { mn: -0.0020, fe: -0.0020, zn: -0.0002, ti: 0 };
+const EXT = { mn: -0.0027, fe: -0.0018, zn: -0.0002, ti: 0 };
 const ORIGIN = {
-  mg: ['+0,0170', 'rovnice A.1 – zvyšuje rozpustnost H'],
-  cu: ['−0,0269', 'rovnice A.1 – snižuje'],
-  si: ['−0,0119', 'rovnice A.1 – snižuje'],
-  mn: ['−0,0020', 'fit tabulky A‑1, ±0,0016 – slabě snižuje'],
-  fe: ['−0,0020', 'fit tabulky A‑1, ±0,0016 – slabě snižuje (souhlasí s literaturou)'],
-  zn: ['−0,0002', 'fit tabulky A‑1, ±0,0003 – prakticky nulový (7xxx se 6 % Zn)'],
-  ti: ['0', 'z dat neurčitelné (Ti ~0,02 %); i při |e| = 0,1 změní CF o < 0,5 %']
+  mg: ['+0,0170', 'rovnice A.1 [1, 4] – zvyšuje rozpustnost H'],
+  cu: ['−0,0269', 'rovnice A.1 [1, 4] – snižuje'],
+  si: ['−0,0119', 'rovnice A.1 [1, 4] – snižuje'],
+  mn: ['−0,0027', 'fit tabulky A‑1, ±0,0017 (1,6σ) – slabě snižuje'],
+  fe: ['−0,0018', 'fit tabulky A‑1, ±0,0015 (1,2σ) – slabě snižuje, směr dle [10]'],
+  zn: ['−0,0002', 'fit tabulky A‑1, ±0,0003 – prakticky nulový'],
+  ti: ['0', 'z dat neurčitelné; horní mez vlivu < 0,5 % CF']
 };
 
 const EXAMPLES = [
